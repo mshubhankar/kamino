@@ -16,11 +16,11 @@ def syn_adult():
     """
     start = time.time()
 
-    path_data = f'./testdata/adult/adult.csv'
+    orig_data = f'./testdata/adult/adult.csv'
+    path_data = f'./testdata/adult/adult_missing_0.1.csv'
     path_ic = f'./testdata/adult/adult.ic'
 
     path_data_preproc = preproc_adult(path_data)
-
     n_row, n_col = pd.read_csv(path_data_preproc).shape
     n_len = len(str(n_row)) + 1
 
@@ -101,7 +101,9 @@ def syn_adult():
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
+        'impute' : True,
         'iterations': 1600  # =1600 for eps=1
+        # 'iterations': 1  # testing
     }
 
     # ### eps=1.6
@@ -148,7 +150,7 @@ def syn_adult():
     end = time.time()
     logging.info(f'TIME_WALL= {end - start}')
 
-    evaluate_data(path_data, path_data_postproc, path_ic)
+    evaluate_data(orig_data, path_data_postproc, path_ic)
     copy_log(paras)
 
 

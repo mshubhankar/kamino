@@ -103,7 +103,7 @@ def hc_repair(data_name, tmp_path, num_attrs, paras, attr=None, n_val=-1):
     return df_preds
 
 
-def update_syn_hm(df, syn, index, sequence, df_preds, path_weight, dcs, concat_attr=None):
+def update_syn_hm(df, syn, index, sequence, df_preds, path_weight, dcs, paras, concat_attr=None):
     """
     Fill the synthetic data value by value
 
@@ -114,6 +114,7 @@ def update_syn_hm(df, syn, index, sequence, df_preds, path_weight, dcs, concat_a
     :param df_preds the output from the model
     :param path_weight file path to constraint weight. If None, do not use weight sampling
     :param dcs a list of dcs
+    :param paras parameters
     :param concat_attr the name of concat attributes
 
     Update the syn dataframe in place
@@ -151,17 +152,110 @@ def update_syn_hm(df, syn, index, sequence, df_preds, path_weight, dcs, concat_a
     # the list to hold all synthetic values for the target attribute
     syn_values = []
     db = None
-
-    # create the df_preds generator
+     # create the df_preds generator
     if concat_attr is None:
-        df_preds_gen = iter(Pred(df_preds, attr, len(df)))
+        df_preds_gen = iter(Pred(df_preds, attr, 0))
+        # df_preds_gen = iter(Pred(df_preds, attr, len(df)))
     else:
-        df_preds_gen = iter(Pred(df_preds, concat_attr, len(df)))
+        df_preds_gen = iter(Pred(df_preds, concat_attr, 0))
+        # df_preds_gen = iter(Pred(df_preds, concat_attr, len(df)))
+
+    if(paras['impute']):
+               
+        missing_indices = df.index[(df[attr]=='nan') | (df[attr].isnull())].tolist()
+        for tid in tqdm(missing_indices):
+            pred_tid, pred_vals_all, pred_probas_all = next(df_preds_gen)
+            while(pred_tid != tid):
+                pred_tid, pred_vals_all, pred_probas_all = next(df_preds_gen)
+
+            break_flag = False
+            for i in range(n_try):
+                if break_flag:
+                    break
+
+                if len(pred_probas_all) == 1 and pred_probas_all[0] < 0:
+                    # numerical attribute, sample from normal distribution
+                    splits = pred_vals_all[0].split('_')
+                    pred_num = float(splits[0])
+                    std = float(splits[1]) * std_scale
+                    pred_vals = [pred_num]
+
+                    if not attr_in_fd:
+                        # if this numeric attribute is not in any fds, then sampling
+                        samples = np.random.normal(pred_num, (i+1) * std, n_val_limit).tolist()
+                        pred_vals += samples
+
+                    gaussian = scipy.stats.norm(pred_num, (i+1) * std)
+                    pred_probas = [gaussian.pdf(v) for v in pred_vals]
+                    nprobas = [p / sum(pred_probas) for p in pred_probas]
+
+                    # clip to domain, assuming the active domain from the true data
+                    min_v = min(df[attr])
+                    max_v = max(df[attr])
+                    pred_vals = [max(min(x, max_v), min_v) for x in pred_vals]
+
+                else:
+                    # categorical attribute
+                    sorted_pair = sorted(zip(pred_probas_all, pred_vals_all), reverse=True)
+                    pred_vals = [x for _, x in sorted_pair]
+                    pred_probas = [x for x, _ in sorted_pair]
+
+                    pred_vals = pred_vals[i * n_val_limit: (i+1) * n_val_limit]
+                    pred_probas = pred_probas[i * n_val_limit: (i+1) * n_val_limit]
+
+                    if len(pred_vals) < n_val_limit:
+                        break_flag = True
+
+                    nprobas = [p / sum(pred_probas) for p in pred_probas]
+
+                if path_weight is not None and len(relevant_dc_idx) > 0 and len(pred_vals) > 1 and len(syn_values) > 0:
+                    if db is None:
+                        db = _prep_db(syn, syn_values, attr, df[attr].dtype, dcs, relevant_dc_idx)
+                    # get the number of violations if setting each value from the predication.
+                    # set true_count=False for faster. Return a marix of size len(pred_vals) X len(dcs)
+                    n_vios = get_n_vio(syn, syn_values, attr, pred_vals, dcs, relevant_dc_idx, all_num_attrs, db, True)
+
+                    for val_idx, pred_val in enumerate(pred_vals):
+                        # check #vio if assigning the cell with pred_val
+                        n_vios_val = n_vios[val_idx, :]
+                        # adjust the nprobas based on n_vio
+                        exp_part = sum(weights * n_vios_val)
+                        nproba_new = nprobas[val_idx] * np.exp(-1. * exp_part)
+                        nprobas[val_idx] = nproba_new
+                    # re-normalize
+                    sum_probas = sum(nprobas)
+                    if sum_probas > 0:
+                        nprobas = [p / sum_probas for p in nprobas]
+                        break_flag = True
+                    else:
+                        # none of the predication is clean
+                        logging.info(f'none of the predication is clean. tid={_tid}, try {i}')
+                        nprobas = [p / sum(pred_probas) for p in pred_probas]
+                        pred_vals = pred_vals[:len(nprobas)]
+                else:
+                    break_flag = True
+
+            assert len(pred_vals) > 0
+            # if attr participates in FDs, then choose the most likely value
+            if attr_in_fd or len(syn_values) == 0:
+                index_max = np.argmax(nprobas)
+                val = pred_vals[index_max]
+                # val = pred_vals[0]
+            else:
+                val = np.random.choice(pred_vals, p=nprobas)
+
+            df[attr][tid]=val
+
+    if db is not None:
+        db.engine.dispose()
 
     for _tid, row in tqdm(syn.iterrows(), total=syn.shape[0]):
         tid = _tid + len(df)
 
         pred_tid, pred_vals_all, pred_probas_all = next(df_preds_gen)
+        while(pred_tid != tid):
+            pred_tid, pred_vals_all, pred_probas_all = next(df_preds_gen)
+
         assert tid == pred_tid
 
         break_flag = False
@@ -261,7 +355,7 @@ def create_missing_values(target_attr, df, syn_o, tmp_path):
     :param df dataframe of true dataset
     :param syn_o dataframe on which we expand
     :param tmp_path path to store the expanded dataframe
-    """
+    """    
     syn = syn_o.copy()
     syn[target_attr] = ''
     train_df = df[syn.columns]
@@ -270,6 +364,24 @@ def create_missing_values(target_attr, df, syn_o, tmp_path):
     with open(tmp_path, 'a+') as file:
         syn.to_csv(file, header=False, index=False)
 
+def impute_iid_attr(attr, df, paras):
+    """
+    Impute missing values in attr based on iid distribution of the column
+    Works only for cat attribute
+
+    :param attr target attribute
+    :param df dataframe holding the true distribution of attr
+    :param paras parameters
+    """
+
+    n_domain = len(df[attr].dropna().unique())
+    temp_df = df[attr].dropna().value_counts()
+    temp_df = abs(temp_df)
+    temp_df_sum = sum(temp_df)
+    temp_df /= temp_df_sum
+
+    missing = df[attr].isnull()
+    df.loc[missing,attr] = np.random.choice(temp_df.index.values.tolist(), size=len(df[missing]), p=temp_df.to_list())
 
 def gen_iid_attr(attr, df, is_numeric, paras, epsilon=None):
     """
@@ -294,8 +406,8 @@ def gen_iid_attr(attr, df, is_numeric, paras, epsilon=None):
             # todo: add noise to gmm
             return None
     else:
-        # categorical attribute
-        n_domain = len(df[attr].unique())
+        # categorical attribute        
+        n_domain = len(df[attr].dropna().unique())
         if epsilon is None:
             noise = np.zeros(n_domain)
         else:
@@ -305,7 +417,7 @@ def gen_iid_attr(attr, df, is_numeric, paras, epsilon=None):
             noise = np.random.normal(0, std1)
 
         temp_df = df[attr].value_counts() + noise
-
+        
         temp_df = abs(temp_df)
         temp_df_sum = sum(temp_df)
         temp_df /= temp_df_sum
@@ -360,6 +472,7 @@ def synthesize(path_data, path_constraint, paras, rand_sequence, ic_sampling, co
 
     if ic_sampling:
         sdata_name = re.sub("\_concat", '', data_name)
+        sdata_name = re.sub("\_missing.*", '', sdata_name)
         path_weight = f'{dir_path}/{sdata_name}.w'
         assert os.path.isfile(path_weight)
         logging.info(f"Path_weight= {path_weight}")
@@ -367,7 +480,9 @@ def synthesize(path_data, path_constraint, paras, rand_sequence, ic_sampling, co
         path_weight = None
 
     df = pd.read_csv(path_data)
-    df.dropna(axis=0, inplace=True)
+    if paras['impute'] == False:
+        df.dropna(axis=0, inplace=True)
+
     dcs = parse_dc(path_constraint, list(df.columns))
 
     all_num_attrs = _get_num_attrs(df, dcs)
@@ -401,6 +516,9 @@ def synthesize(path_data, path_constraint, paras, rand_sequence, ic_sampling, co
         # todo: assuming the first attribute is not in the group of concat attributes
         assert attr not in concat_attrs
     epsilon1 = paras['epsilon1'] if paras['dp'] else None
+    if paras['impute']:
+        impute_iid_attr(attr, df, paras)
+ 
     syn = gen_iid_attr(attr, df, attr in all_num_attrs, paras, epsilon1)
     syned_attrs.append(attr)
 
@@ -491,7 +609,7 @@ def synthesize(path_data, path_constraint, paras, rand_sequence, ic_sampling, co
         if ar:
             update_syn_arsampling(df, syn, i, sequence, df_preds, path_weight, dcs)
         else:
-            update_syn_hm(df, syn, i, sequence, df_preds, path_weight, dcs)
+            update_syn_hm(df, syn, i, sequence, df_preds, path_weight, dcs, paras)
 
         if m > 0:
             mcmc(df, syn, i, sequence, df_preds, path_weight, dcs, m=m)

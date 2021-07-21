@@ -191,7 +191,9 @@ def preproc_adult(path):
     """
     df = pd.read_csv(path)
     target_attrs = ['sex', 'income']
-    df['sex_income'] = df[target_attrs].agg('_'.join, axis=1)
+    missing = df[target_attrs].isnull().any(axis=1)
+    df['sex_income'] = df.loc[~missing, target_attrs].agg('_'.join, axis=1)
+    df.loc[missing,'sex_income'] = np.nan
     df.drop(columns=target_attrs, inplace=True)
 
     base = os.path.basename(path)

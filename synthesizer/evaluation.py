@@ -192,7 +192,8 @@ def validate_accuracy(path_true, path_syn):
     num_attrs = list(df_true.select_dtypes(include=np.number).columns)
 
     true_len = df_true.shape[0]
-    sn = min(sample_size, true_len)
+    syn_len = df_syn.shape[0]
+    sn = min(sample_size, syn_len)
 
     df_true = df_true.sample(n=sn, random_state=random_state)
     df_syn = df_syn.sample(n=sn, random_state=random_state)
@@ -430,7 +431,8 @@ if __name__ == '__main__':
     path_constraint = f'./testdata/adult/adult.ic'
 
     paths = [
-        path_true,
+        # path_true,
+        './testdata/adult/PB_missing_10/adult_missing_0.1-theta4-epsilon1-rep0.syn',
         # path to the synthetic data
     ]
 
