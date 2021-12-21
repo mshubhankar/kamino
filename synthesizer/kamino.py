@@ -161,7 +161,7 @@ def update_syn_hm(df, syn, index, sequence, df_preds, path_weight, dcs, paras, c
         # df_preds_gen = iter(Pred(df_preds, concat_attr, len(df)))
 
     if(paras['impute']):
-               
+        print('impute process')
         missing_indices = df.index[(df[attr]=='nan') | (df[attr].isnull())].tolist()
         for tid in tqdm(missing_indices):
             pred_tid, pred_vals_all, pred_probas_all = next(df_preds_gen)
@@ -479,8 +479,8 @@ def synthesize(path_data, path_constraint, paras, rand_sequence, ic_sampling, co
     else:
         path_weight = None
 
-    df = pd.read_csv(path_data)
-    if paras['impute'] == False:
+    df = pd.read_csv(path_data)    
+    if paras['impute'] == False and paras['complete_intermediate'] == False:
         df.dropna(axis=0, inplace=True)
 
     dcs = parse_dc(path_constraint, list(df.columns))

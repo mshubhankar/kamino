@@ -18,13 +18,13 @@ def syn_br2000():
     """
     start = time.time()
 
-    path_data = f'./testdata/br2000/br2000.csv'
+    orig_data = f'./testdata/br2000/br2000.csv'
+    path_data = f'./testdata/br2000/br2000_missing_0.2.csv'
     path_ic = f'./testdata/br2000/br2000.ic'
 
-    # Group bianry attributes as one attribute. return path includes _concat
+    # Group bianry attributes as one attribute. return path includes _concat    
     path_data_preproc = preproc_br2000_separate(path_data)
-
-    n_row, n_col = pd.read_csv(path_data_preproc).shape
+    n_row, n_col = pd.read_csv(path_data_preproc).dropna().shape
     n_len = len(str(n_row)) + 1
 
     paras = {
@@ -34,14 +34,18 @@ def syn_br2000():
         'n_col': n_col,  # number of columns in the true data
         'epsilon1': .4,  # epsilon1,
         'l2_norm_clip': 1.0,
-        'noise_multiplier': 1.1,
+        'noise_multiplier': 1.1, #1.1 no missing 2.2 missing 0.1 10.2 missing 0.2
         'minibatch_size': 29,  # batch size to sample for each iteration.
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
-        'iterations': 1500  # =1500 for comparision, =1000 for testing learned weights
+        'iterations': 1500,  # =1500 for comparision, =1000 for testing learned weights
+        'impute' : False,
+        'complete_intermediate' : True,
     }
 
+    if paras['complete_intermediate']:
+        paras['reuse_embedding'] = False
     if paras['dp']:
         epsilon2 = _analyze_privacy(paras)
 
@@ -74,7 +78,7 @@ def syn_br2000():
     end = time.time()
     logging.info(f'TIME_WALL= {end - start}')
 
-    evaluate_data(path_data, path_data_postproc, path_ic)
+    evaluate_data(orig_data, path_data_postproc, path_ic)
     copy_log(paras)
 
 
@@ -87,7 +91,7 @@ if __name__ == '__main__':
 
     # remove cache
     os.system(f'rm *.pkl')
-    learn_w_br2000(sample_size, 100, 1e-3)
+    # learn_w_br2000(sample_size, 100, 1e-3)
 
     # relink to the new learned weight file
     os.system(f'rm ./testdata/br2000/br2000.w')

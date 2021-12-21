@@ -153,9 +153,12 @@ def preproc_br2000_separate(path):
     """
     Group bianry attributes as one attribute. Only execute once.
     """
-    df = pd.read_csv(path)
+    df = pd.read_csv(path)    
     target_attrs = ['a1', 'a6', 'a7', 'a8', 'a14']
-    df['combo'] = df[target_attrs].agg('_'.join, axis=1)
+    missing = df[target_attrs].isnull().any(axis=1)
+    df['combo'] = df.loc[~missing, target_attrs].agg('_'.join, axis=1)
+    df.loc[missing,'combo'] = np.nan
+    # df['combo'] = df[target_attrs].agg('_'.join, axis=1)
     df.drop(columns=target_attrs, inplace=True)
 
     # iid_attrs = ['a5', 'a13']
