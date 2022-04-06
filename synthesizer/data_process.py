@@ -208,6 +208,39 @@ def preproc_adult(path):
 
     return out_path
 
+def preproc_bank(path):
+    """
+    Group sex and income as one attribute. Only execute once.
+    """
+    df = pd.read_csv(path)
+    target_attrs = ['marital', 'default', 'housing', 'loan', 'contact']
+    missing = df[target_attrs].isnull().any(axis=1)
+    df['combo'] = df.loc[~missing, target_attrs].agg('_'.join, axis=1)
+    df.loc[missing,'combo'] = np.nan
+    df.drop(columns=target_attrs, inplace=True)
+
+    base = os.path.basename(path)
+    data_name = os.path.splitext(base)[0]
+    dir_path = os.path.dirname(path)
+
+    out_path = f'{dir_path}/{data_name}_concat.csv'
+    df.to_csv(out_path, index=False)
+
+    return out_path
+
+def postproc_bank(path):
+    """"
+    Restore combo into individual attributes
+    """
+    df = pd.read_csv(path)
+    df[['marital', 'default', 'housing', 'loan', 'contact']] = df.combo.str.split("_", expand=True)
+    df.drop(columns=['combo'], inplace=True)
+
+    out_path = re.sub("\_concat", '', path)
+    df.to_csv(out_path, index=False)
+
+    return out_path
+
 
 def postproc_adult(path):
     """"

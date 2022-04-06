@@ -9,6 +9,8 @@ def _get_num_attrs_quant(data):
     """
     if 'adult' in data:
         num_attrs_quant = {'fnlwgt': 100, 'capital-gain': 100, 'capital-loss': 100}
+    if 'bank' in data:
+        num_attrs_quant = {'balance': 500, 'duration': 100, 'pdays': 50, 'previous': 50}
     elif 'tax' in data:
         num_attrs_quant = {'Salary': 50, 'Rate': 10, 'SingleExemp': 50, 'MarriedExemp': 50, 'ChildExemp': 50}
     elif 'br2000' in data:

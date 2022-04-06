@@ -101,7 +101,10 @@ def find_sequence(data_name, dcs, df, rand_sequence):
     if rand_sequence:
         sequence = random.sample(attrs, len(attrs))
     else:
-        if 'tax' in data_name:
+        if 'bank' in data_name:
+            sequence = ['combo', 'education', 'poutcome', 'job', 'balance', 'month', 'day', 'campaign', 'pdays', 'previous', 'age', 'duration', 'y']
+
+        elif 'tax' in data_name:
             sequence = ['AreaCode', 'State', 'Zip', 'City', 'HasChild', 'MaritalStatus', 'Salary', 'Rate',
                         'SingleExemp', 'ChildExemp', 'Gender', 'MarriedExemp']
 

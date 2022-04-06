@@ -358,7 +358,7 @@ def create_missing_values(target_attr, df, syn_o, tmp_path):
     """    
     syn = syn_o.copy()
     syn[target_attr] = ''
-    train_df = df[syn.columns]
+    train_df = df[syn.columns].dropna()
     train_df.to_csv(tmp_path, index=False)
 
     with open(tmp_path, 'a+') as file:
