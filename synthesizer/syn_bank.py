@@ -96,7 +96,7 @@ def syn_bank():
         'n_col': n_col,  # number of columns in the true dataset
         'epsilon1': .1,  #
         'l2_norm_clip': 1.0,
-        'noise_multiplier': 2.55,  #1.1-no missing 2.6-10% 15-20%
+        'noise_multiplier': 1.03,  #1.1-no missing 2.6-10% 15-20%
         'minibatch_size': 25,  # batch size to sample for each iteration
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
