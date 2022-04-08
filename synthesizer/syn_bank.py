@@ -17,7 +17,7 @@ def syn_bank():
     start = time.time()
 
     orig_data = f'./testdata/bank/bank.csv'
-    path_data = f'./testdata/bank/bank.csv'
+    path_data = f'./testdata/bank/MCAR/bank_missing_0.1.csv'
     path_ic = f'./testdata/bank/bank.ic'
 
     path_data_preproc = preproc_bank(path_data)
@@ -96,13 +96,14 @@ def syn_bank():
         'n_col': n_col,  # number of columns in the true dataset
         'epsilon1': .1,  #
         'l2_norm_clip': 1.0,
-        'noise_multiplier': 1.03,  #1.1-no missing 2.6-10% 15-20%
+        'noise_multiplier': 2.55,  #1.1-no missing 2.6-10% 15-20%
         'minibatch_size': 25,  # batch size to sample for each iteration
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
         'impute' : False,
         'complete_intermediate' : False,
+        'epsilon' : 0.9,
         'iterations': 1600  # =1600 for eps=1
         # 'iterations': 1  # testing
     }
@@ -134,6 +135,13 @@ def syn_bank():
         std1 = np.sqrt(sensitivity * 2. * np.log(1.25 / paras['delta'])) / paras['epsilon1']
         for i in range(1):
             gaussian_std.append(std1)
+
+        if paras['epsilon']:
+            paras['noise_multiplier'] = analysis.noise_mult(N=n_row,
+                                       batch_size=paras['minibatch_size'],
+                                       target_eps=paras['epsilon'],
+                                       iterations=paras['iterations'] * (paras['n_col'] - 1),
+                                       delta=paras['delta'])
 
         epsilon = analysis.epsilon(N=n_row,
                                    batch_size=paras['minibatch_size'],
