@@ -111,6 +111,29 @@ def _get_targets(path):
             [0,300000],
             ['o'],
         ]
+    elif 'bank' in path:
+        target_attrs = ['age', 'job', 'marital', 'education', 'default', 'balance', 'housing',
+                       'loan', 'contact', 'day', 'month', 'duration', 'campaign', 'pdays',
+                       'previous', 'poutcome', 'y']
+        pos_values = [  # total = 19951
+            [30,45],
+            ['blue-collar', 'management', 'technician'],
+            ['married'],
+            ['secondary'],
+            ['yes'],
+            [0, 10000],
+            ['yes'],
+            ['yes'],
+            ['cellular'],
+            [0, 15],
+            ['jan', 'feb', 'mar', 'apr', 'may', 'jun'],
+            [0, 1500],
+            [1, 3],
+            [0,300],
+            [1, 275], 
+            ['failure', 'other', 'success'],
+            ['yes']
+        ]
     return target_attrs, pos_values
 
 
