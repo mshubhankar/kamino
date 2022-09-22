@@ -366,9 +366,11 @@ def _compute_margianl_diff(df_true_o, df_syn_0, combo_attrs):
             allkey.add(key)
 
     diff = 0
-    for key in allkey:
+    # print(combo_attrs)
+    for key in sorted(allkey):
         count0 = list_dict[0].get(key, 0)
         count1 = list_dict[1].get(key, 0)
+        # print(key, count0/ len(df_true), count1/ len(df_syn))
         diff += abs(count0 / len(df_true) - count1 / len(df_syn))
 
     return diff
@@ -393,7 +395,7 @@ def validate_kway_marginal(k, path_true, path_syn):
     sum_diff = 0
     count = 0
     msg = f'EXP_{k}WAY\n{path_syn}\nattributes\t\t {k}-way marginals\n'
-
+    # combos_attrs = [['c_custkey']]
     with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor:
         futures = [executor.submit(_compute_margianl_diff, df_true, df_syn, combo_attrs) for combo_attrs in combos_attrs]
 
@@ -427,12 +429,76 @@ def _setup_logging(logging_file):
 
 if __name__ == '__main__':
 
-    path_true = f'./testdata/adult/adult.csv'
-    path_constraint = f'./testdata/adult/adult.ic'
+    # path_true = f'./testdata/adult/adult.csv'
+    # path_constraint = f'./testdata/adult/adult.ic'
+    # path_true = f'./testdata/tpch/tpch_order.csv'
+    # path_constraint = f'./testdata/tpch/tpch_order.ic'
+    # path_true = f'./testdata/tax/tax30k.csv'
+    # path_constraint = f'./testdata/tax/tax30k.ic'
+    # path_true = f'./testdata/br2000/br2000.csv'
+    # path_constraint = f'./testdata/br2000/br2000.ic'
+    path_true = f'./testdata/bank/bank.csv'
+    path_constraint = f'./testdata/bank/bank.ic'
 
     paths = [
         # path_true,
-        './testdata/adult/PB_missing_10/adult_missing_0.1-theta4-epsilon1-rep0.syn',
+        # '/home/shubhankar/repos/kamino/testdata/adult/No missing/adult_dp1.10_randFalse_icTrue_m0.syn',
+        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes NO missing/adult.pb.1',
+        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes NO missing/adult.pb.2',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB/br2000.pb.0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB/br2000.pb.1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB/br2000.pb.2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB_missing_0.1/br2000_missing_0.1.pb.0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB_missing_0.1/br2000_missing_0.1.pb.1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB_missing_0.1/br2000_missing_0.1.pb.2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.1/br2000_missing_0.1_full.pb.0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.1/br2000_missing_0.1_full.pb.1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.1/br2000_missing_0.1_full.pb.2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.2/br2000_missing_0.2_full.pb.0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.2/br2000_missing_0.2_full.pb.1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.2/br2000_missing_0.2_full.pb.2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan No Missing/adulteps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan No Missing/adulteps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/no missing/BR2000eps1.0_run0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/no missing/BR2000eps1.0_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/no missing/BR2000eps1.0_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 10%/BR2000_missing_0.1eps1.0_run0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 10%/BR2000_missing_0.1eps1.0_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 10%/BR2000_missing_0.1eps1.0_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 20%/BR2000_missing_0.2eps1.0_run0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 20%/BR2000_missing_0.2eps1.0_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 20%/BR200_missing_0.2eps1.0_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/no missing/br2000eps1_run0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/no missing/br2000eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/no missing/br2000eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 10%/br2000_missing_0.1_eps1_run0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 10%/br2000_missing_0.1_eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 10%/br2000_missing_0.1_eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 20%/br2000_missing_0.2_eps1_run0.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 20%/br2000_missing_0.2_eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 20%/br2000_missing_0.2_eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE no missing/adulteps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE no missing/adulteps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 20% missing/Adultmissing0.2eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 20% missing/Adultmissing0.2eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 10% missing/Adultmissing0.1eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 10% missing/Adultmissing0.1eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 10% missing/adult_missing_0.1_eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 10% missing/adult_missing_0.1_eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 20% missing/adult_missing_0.2_eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 20% missing/adult_missing_0.2_eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 10% missing/adult_missing_0.1_full_eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 10% missing/adult_missing_0.1_full_eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 20% missing/adult_missing_0.2_full_eps1_run1.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 20% missing/adult_missing_0.2_full_eps1_run2.csv',
+        # '/home/shubhankar/repos/kamino/testdata/adult/Missing 10%/adult_missing_0.1_dp1.12_randFalse_icTrue_m0.syn',
+        # './testdata/adult/adult_missing_0.1.csv',
+        # './testdata/adult/adult_missing_0.2.csv',
+        # './testdata/tpch/tpch_order_missing_0.1.csv',
+        # './testdata/tpch/tpch_order_missing_0.2.csv',
+        # './testdata/tax/tax30k_missing_0.1.csv',
+        # './testdata/tax/tax30k_missing_0.2.csv',
+        '/home/shubhankar/repos/kamino/testdata/bank/NoMissing/bank_dp1.15_randFalse_icTrue_m0.syn',
         # path to the synthetic data
     ]
 
@@ -440,11 +506,11 @@ if __name__ == '__main__':
         logging_file = path_syn[:-4] + '.log'
         _setup_logging(logging_file)
 
-        validate_dc_vio(path_constraint, path_syn)
+        # validate_dc_vio(path_constraint, path_syn)
 
-        validate_kway_marginal(1, path_true, path_syn)
-        validate_kway_marginal(2, path_true, path_syn)
-        validate_kway_marginal(3, path_true, path_syn)
+        # validate_kway_marginal(1, path_true, path_syn)
+        # validate_kway_marginal(2, path_true, path_syn)
+        # validate_kway_marginal(3, path_true, path_syn)
 
         validate_accuracy(path_true, path_syn)
 

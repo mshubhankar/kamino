@@ -17,7 +17,7 @@ def syn_bank():
     start = time.time()
 
     orig_data = f'./testdata/bank/bank.csv'
-    path_data = f'./testdata/bank/MCAR/bank_missing_0.1.csv'
+    path_data = f'./testdata/bank/MAR/bank_missing_0.1.csv'
     path_ic = f'./testdata/bank/bank.ic'
 
     path_data_preproc = preproc_bank(path_data)
@@ -101,7 +101,7 @@ def syn_bank():
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
-        'impute' : False,
+        'impute' : True,
         'complete_intermediate' : False,
         'epsilon' : 0.9,
         'iterations': 1600  # =1600 for eps=1
@@ -142,6 +142,7 @@ def syn_bank():
                                        target_eps=paras['epsilon'],
                                        iterations=paras['iterations'] * (paras['n_col'] - 1),
                                        delta=paras['delta'])
+            print('sigma changed to', paras['noise_multiplier'])
 
         epsilon = analysis.epsilon(N=n_row,
                                    batch_size=paras['minibatch_size'],

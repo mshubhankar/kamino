@@ -112,7 +112,10 @@ def find_sequence(data_name, dcs, df, rand_sequence):
                 sequence = sequence[:2]
 
         elif 'adult' in data_name:
-            if 'concat' in data_name:
+            if 'three' in data_name:
+                sequence = ['education', 'marital-status', 'workclass']
+
+            elif 'concat' in data_name:
                 sequence = ['education', 'education-num', 'sex_income', 'race', 'relationship', 'marital-status',
                             'workclass', 'occupation', 'native-country', 'age', 'hours-per-week', 'fnlwgt',
                             'capital-gain', 'capital-loss']

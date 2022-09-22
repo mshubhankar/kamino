@@ -27,7 +27,7 @@ def _analyze_privacy(paras):
 
 def evaluate_data(path_data, path_syn, path_ic):
 
-    validate_dc_vio(path_ic, path_syn)
+    # validate_dc_vio(path_ic, path_syn)
 
     validate_kway_marginal(1, path_data, path_syn)
     validate_kway_marginal(2, path_data, path_syn)

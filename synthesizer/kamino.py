@@ -358,7 +358,7 @@ def create_missing_values(target_attr, df, syn_o, tmp_path):
     """    
     syn = syn_o.copy()
     syn[target_attr] = ''
-    train_df = df[syn.columns].dropna()
+    train_df = df[syn.columns]
     train_df.to_csv(tmp_path, index=False)
 
     with open(tmp_path, 'a+') as file:
@@ -463,7 +463,7 @@ def synthesize(path_data, path_constraint, paras, rand_sequence, ic_sampling, co
         epsilon_str = 'INF'
 
     m = paras.get("MCMC", 0)
-    syn_file = f"{data_name}_dp{epsilon_str}_rand{rand_sequence}_ic{ic_sampling}_m{str(m)}.syn"
+    syn_file = f"{data_name}_dp{epsilon_str}_rand{rand_sequence}_ic{ic_sampling}_m{str(m)}_imp{str(paras['impute'])}.syn"
     path_syn = f"{dir_syn}/{syn_file}"
     paras['path_syn'] = path_syn
     paras['dir_syn'] = dir_syn
