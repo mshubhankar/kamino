@@ -19,12 +19,12 @@ def syn_br2000():
     start = time.time()
 
     orig_data = f'./testdata/br2000/br2000.csv'
-    path_data = f'./testdata/br2000/br2000_missing_0.2.csv'
+    path_data = f'./testdata/br2000/MNAR/br2000_missing_0.3.csv'
     path_ic = f'./testdata/br2000/br2000.ic'
 
     # Group bianry attributes as one attribute. return path includes _concat    
     path_data_preproc = preproc_br2000_separate(path_data)
-    n_row, n_col = pd.read_csv(path_data_preproc).dropna().shape
+    n_row, n_col = pd.read_csv(path_data_preproc).shape
     n_len = len(str(n_row)) + 1
 
     paras = {
@@ -39,9 +39,10 @@ def syn_br2000():
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
+        'epsilon': 0.6,
         'iterations': 1500,  # =1500 for comparision, =1000 for testing learned weights
-        'impute' : False,
-        'complete_intermediate' : True,
+        'impute' : True,
+        'complete_intermediate' : False,
     }
 
     if paras['complete_intermediate']:
@@ -59,6 +60,14 @@ def syn_br2000():
         std_learnW = np.sqrt(sensitivity * 2. * np.log(1.25 / 1e-3)) / 1.
         gaussian_std.append(std_learnW)
 
+        if paras['epsilon']:
+            paras['noise_multiplier'] = analysis.noise_mult(N=n_row,
+                                       batch_size=paras['minibatch_size'],
+                                       target_eps=paras['epsilon'],
+                                       iterations=paras['iterations'] * (paras['n_col'] - 1),
+                                       delta=paras['delta'],
+                                       gaussian_std=gaussian_std)
+            
         epsilon = analysis.epsilon(N=n_row,
                                    batch_size=paras['minibatch_size'],
                                    noise_multiplier=paras['noise_multiplier'],
@@ -94,8 +103,8 @@ if __name__ == '__main__':
     # learn_w_br2000(sample_size, 100, 1e-3)
 
     # relink to the new learned weight file
-    os.system(f'rm ./testdata/br2000/br2000.w')
-    os.system(f'ln -s br2000_sample{sample_size}.w ./testdata/br2000/br2000.w')
+    # os.system(f'rm ./testdata/br2000/br2000.w')
+    # os.system(f'ln -s br2000_sample{sample_size}.w ./testdata/br2000/br2000.w')
 
     syn_br2000()
 

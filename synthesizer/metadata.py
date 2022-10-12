@@ -17,6 +17,8 @@ def _get_num_attrs_quant(data):
         num_attrs_quant = {}
     elif 'tpch' in data:
         num_attrs_quant = {'c_acctbal': 100, 'o_totalprice': 100}
+    elif 'national' in data:
+        num_attrs_quant = {'AGEP': 50, 'OWN_RENT': 50, 'EDU': 50, 'PINCP_DECILE': 50, 'PWGTP': 50, 'WGTP':50}
     else:
         print(f'No quantization info set for {data}')
         num_attrs_quant = {}
@@ -77,6 +79,30 @@ def _get_targets(path):
                       [0, 0.1],
                       [0, 0.1],
                       [0, 0.1]
+        ]
+    elif 'national' in path:
+        target_attrs = ['AGEP', 'SEX', 'MSP', 'HISP', 'RAC1P', 'NOC', 'NPF',
+       'OWN_RENT', 'DENSITY', 'EDU', 'PINCP', 'PINCP_DECILE', 'POVPIP', 'DREM',
+       'DPHY', 'DEYE', 'DEAR', 'PWGTP', 'WGTP']
+        pos_values = [[0, 50],
+                      ['2'],
+                      ['1'],
+                      ['0'],
+                      ['1'],
+                      ['0'],
+                      ['2','5'],
+                      ['1'],
+                      [17,3500],
+                      ['9', '5', '7'],
+                      [-9000, 30000],
+                      ['9', '0', '8'],
+                      [0,400],
+                      ['2'],
+                      ['2'],
+                      ['2'],
+                      ['2'],
+                      [1,80],
+                      [4,80]
         ]
     elif 'br2000' in path:
         target_attrs = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'a10', 'a11',

@@ -189,7 +189,18 @@ def validate_accuracy(path_true, path_syn):
     df_true, df_syn, attrs = _prep_dfs(path_true, path_syn, bin_num=False, clip_num=False, scale_num=False)
 
     target_attrs, pos_values = _get_targets(path_true)
-    num_attrs = list(df_true.select_dtypes(include=np.number).columns)
+    all_num_attrs = list(df_true.select_dtypes(include=np.number).columns)
+    num_attrs = []
+    for attr in all_num_attrs:
+        cast_to_str = False
+        if all(round(df_true[attr].dropna())==df_true[attr].dropna()) and (max(df_true[attr].dropna()) - min(df_true[attr].dropna()) < 50):
+            cast_to_str = True
+
+        if cast_to_str:
+            df_true[attr] = df_true[attr].astype(str)
+            df_syn[attr] = df_syn[attr].astype(str)
+        else:
+            num_attrs.append(attr)
 
     true_len = df_true.shape[0]
     syn_len = df_syn.shape[0]
@@ -437,68 +448,38 @@ if __name__ == '__main__':
     # path_constraint = f'./testdata/tax/tax30k.ic'
     # path_true = f'./testdata/br2000/br2000.csv'
     # path_constraint = f'./testdata/br2000/br2000.ic'
-    path_true = f'./testdata/bank/bank.csv'
-    path_constraint = f'./testdata/bank/bank.ic'
+    path_true = f'./testdata/national/national.csv'
+    path_constraint = f'./testdata/national/national.ic'
 
     paths = [
         # path_true,
         # '/home/shubhankar/repos/kamino/testdata/adult/No missing/adult_dp1.10_randFalse_icTrue_m0.syn',
-        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes NO missing/adult.pb.1',
-        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes NO missing/adult.pb.2',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB/br2000.pb.0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB/br2000.pb.1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB/br2000.pb.2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB_missing_0.1/br2000_missing_0.1.pb.0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB_missing_0.1/br2000_missing_0.1.pb.1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB_missing_0.1/br2000_missing_0.1.pb.2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.1/br2000_missing_0.1_full.pb.0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.1/br2000_missing_0.1_full.pb.1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.1/br2000_missing_0.1_full.pb.2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.2/br2000_missing_0.2_full.pb.0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.2/br2000_missing_0.2_full.pb.1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/PB2_missing_0.2/br2000_missing_0.2_full.pb.2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan No Missing/adulteps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan No Missing/adulteps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/no missing/BR2000eps1.0_run0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/no missing/BR2000eps1.0_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/no missing/BR2000eps1.0_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 10%/BR2000_missing_0.1eps1.0_run0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 10%/BR2000_missing_0.1eps1.0_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 10%/BR2000_missing_0.1eps1.0_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 20%/BR2000_missing_0.2eps1.0_run0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 20%/BR2000_missing_0.2eps1.0_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/dpvae/missing 20%/BR200_missing_0.2eps1.0_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/no missing/br2000eps1_run0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/no missing/br2000eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/no missing/br2000eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 10%/br2000_missing_0.1_eps1_run0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 10%/br2000_missing_0.1_eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 10%/br2000_missing_0.1_eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 20%/br2000_missing_0.2_eps1_run0.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 20%/br2000_missing_0.2_eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/br2000/pategan/missing 20%/br2000_missing_0.2_eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE no missing/adulteps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE no missing/adulteps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 20% missing/Adultmissing0.2eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 20% missing/Adultmissing0.2eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 10% missing/Adultmissing0.1eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/DPVAE 10% missing/Adultmissing0.1eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 10% missing/adult_missing_0.1_eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 10% missing/adult_missing_0.1_eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 20% missing/adult_missing_0.2_eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/Pategan 20% missing/adult_missing_0.2_eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 10% missing/adult_missing_0.1_full_eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 10% missing/adult_missing_0.1_full_eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 20% missing/adult_missing_0.2_full_eps1_run1.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/PrivBayes2 20% missing/adult_missing_0.2_full_eps1_run2.csv',
-        # '/home/shubhankar/repos/kamino/testdata/adult/Missing 10%/adult_missing_0.1_dp1.12_randFalse_icTrue_m0.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MCAR/1002-1921_omnioculars.local/national_missing_0.1_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MCAR/1003-0337_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MCAR/1003-0431_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MCAR/1003-0526_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MAR/1002-2043_omnioculars.local/national_missing_0.1_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MAR/1002-2143_omnioculars.local/national_missing_0.1_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MAR/1002-2244_omnioculars.local/national_missing_0.1_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MAR/1003-0621_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MAR/1003-0732_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MAR/1003-0835_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MNAR/1002-2344_omnioculars.local/national_missing_0.1_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MNAR/1003-0102_omnioculars.local/national_missing_0.1_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MNAR/1003-0218_omnioculars.local/national_missing_0.1_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MNAR/1003-0940_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MNAR/1003-1036_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+        '/Users/comfortablynumb/repos/kamino/testdata/national/MNAR/1003-1227_omnioculars.local/national_missing_0.2_dp1.00_randFalse_icTrue_m0_impTrue.syn',
+
+
+
         # './testdata/adult/adult_missing_0.1.csv',
         # './testdata/adult/adult_missing_0.2.csv',
         # './testdata/tpch/tpch_order_missing_0.1.csv',
         # './testdata/tpch/tpch_order_missing_0.2.csv',
         # './testdata/tax/tax30k_missing_0.1.csv',
         # './testdata/tax/tax30k_missing_0.2.csv',
-        '/home/shubhankar/repos/kamino/testdata/bank/NoMissing/bank_dp1.15_randFalse_icTrue_m0.syn',
+        # '/home/shubhankar/repos/kamino/testdata/bank/NoMissing/bank_dp1.15_randFalse_icTrue_m0.syn',
         # path to the synthetic data
     ]
 
@@ -508,8 +489,8 @@ if __name__ == '__main__':
 
         # validate_dc_vio(path_constraint, path_syn)
 
-        # validate_kway_marginal(1, path_true, path_syn)
-        # validate_kway_marginal(2, path_true, path_syn)
+        validate_kway_marginal(1, path_true, path_syn)
+        validate_kway_marginal(2, path_true, path_syn)
         # validate_kway_marginal(3, path_true, path_syn)
 
         validate_accuracy(path_true, path_syn)

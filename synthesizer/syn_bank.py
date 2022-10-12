@@ -17,11 +17,11 @@ def syn_bank():
     start = time.time()
 
     orig_data = f'./testdata/bank/bank.csv'
-    path_data = f'./testdata/bank/MAR/bank_missing_0.1.csv'
+    path_data = f'./testdata/bank/MNAR/bank_missing_0.3.csv'
     path_ic = f'./testdata/bank/bank.ic'
 
     path_data_preproc = preproc_bank(path_data)
-    n_row, n_col = pd.read_csv(path_data_preproc).dropna().shape
+    n_row, n_col = pd.read_csv(path_data_preproc).shape
     n_len = len(str(n_row)) + 1
 
     # ## eps=0.1
@@ -137,11 +137,17 @@ def syn_bank():
             gaussian_std.append(std1)
 
         if paras['epsilon']:
-            paras['noise_multiplier'] = analysis.noise_mult(N=n_row,
-                                       batch_size=paras['minibatch_size'],
-                                       target_eps=paras['epsilon'],
-                                       iterations=paras['iterations'] * (paras['n_col'] - 1),
-                                       delta=paras['delta'])
+            while(True):
+                paras['noise_multiplier'] = analysis.noise_mult(N=n_row,
+                                         batch_size=paras['minibatch_size'],
+                                         target_eps=paras['epsilon'],
+                                         iterations=paras['iterations'] * (paras['n_col'] - 1),
+                                         delta=paras['delta'])
+                if paras['noise_multiplier']>20:
+                    paras['iterations'] = paras['iterations']//2
+                    paras['minibatch_size'] = paras['minibatch_size']//2
+                else:
+                    break
             print('sigma changed to', paras['noise_multiplier'])
 
         epsilon = analysis.epsilon(N=n_row,

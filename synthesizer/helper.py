@@ -64,7 +64,7 @@ def _get_num_attrs(df, dcs):
         cast_to_str = False
         if attr in attrs_in_fd and attr not in attrs_in_dc:
             cast_to_str = True
-        elif all(round(df[attr].dropna())==df[attr].dropna()) and (max(df[attr]) - min(df[attr]) < 200):
+        elif all(round(df[attr].dropna())==df[attr].dropna()) and (max(df[attr].dropna()) - min(df[attr].dropna()) < 200):
             cast_to_str = True
 
         if cast_to_str:

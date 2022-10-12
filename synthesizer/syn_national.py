@@ -5,22 +5,22 @@ import pandas as pd
 import numpy as np
 
 from pyvacy.pyvacy import analysis
-from synthesizer.data_process import preproc_adult, postproc_adult
+# from synthesizer.data_process import preproc_national, postproc_national
 from synthesizer.util import _analyze_privacy, evaluate_data, copy_log
 from synthesizer.kamino import syn_data
 
 
-def syn_adult():
+def syn_national():
     """
     Group sex and income in the preprocessing step. Restore back from HoloMake process.
     """
     start = time.time()
 
-    orig_data = f'./testdata/adult/adult.csv'
-    path_data = f'./testdata/adult/MCAR/adult_missing_0.1.csv'
-    path_ic = f'./testdata/adult/adult.ic'
+    orig_data = f'./testdata/national/national.csv'
+    path_data = f'./testdata/national/MNAR/national_missing_0.3.csv'
+    path_ic = f'./testdata/national/national.ic'
 
-    # path_data_preproc = preproc_adult(path_data)
+    # path_data_preproc = preproc_national(path_data)
     path_data_preproc = path_data
     n_row, n_col = pd.read_csv(path_data_preproc).shape
     n_len = len(str(n_row)) + 1
@@ -99,13 +99,13 @@ def syn_adult():
         'epsilon1': .1,  #
         'l2_norm_clip': 1.0,
         'noise_multiplier': None,  #1.1-no missing 2.6-10% 15-20%  
-        'minibatch_size': 23,  # batch size to sample for each iteration
+        'minibatch_size': 15,  # batch size to sample for each iteration
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
         'impute' : True,
         'complete_intermediate' : False,
-        'iterations': 1600  # =1600 for eps=1
+        'iterations': 800  # =1600 for eps=1
         # 'iterations': 1  # testing
     }
 
@@ -162,7 +162,7 @@ def syn_adult():
     syn_data(path_data_preproc, path_ic, paras)
     path_syn = paras['path_syn']
 
-    # path_data_postproc = postproc_adult(path_syn)
+    # path_data_postproc = postproc_national(path_syn)
     path_data_postproc = path_syn
     end = time.time()
     logging.info(f'TIME_WALL= {end - start}')
@@ -176,5 +176,5 @@ if __name__ == '__main__':
     The entry point for using kamino to generate synthetic dataset
     """
 
-    syn_adult()
+    syn_national()
 
