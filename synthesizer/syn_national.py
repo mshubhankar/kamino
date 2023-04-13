@@ -17,7 +17,7 @@ def syn_national():
     start = time.time()
 
     orig_data = f'./testdata/national/national.csv'
-    path_data = f'./testdata/national/MNAR/national_missing_0.3.csv'
+    path_data = f'./testdata/national/MAR/national_missing_0.35.csv'
     path_ic = f'./testdata/national/national.ic'
 
     # path_data_preproc = preproc_national(path_data)
@@ -93,7 +93,7 @@ def syn_national():
     paras = {
         'reuse_embedding': True,  # set True to reuse the embedding
         'dp': True,  # set True to enable privacy
-        'total_epsilon' : 1,
+        'total_epsilon' : 3,
         'n_row': n_row,  # number of rows in the true dataset
         'n_col': n_col,  # number of columns in the true dataset
         'epsilon1': .1,  #
@@ -105,7 +105,7 @@ def syn_national():
         'learning_rate': 1e-4,
         'impute' : True,
         'complete_intermediate' : False,
-        'iterations': 800  # =1600 for eps=1
+        'iterations': 1600  # =1600 for eps=1
         # 'iterations': 1  # testing
     }
 

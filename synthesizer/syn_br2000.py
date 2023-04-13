@@ -19,7 +19,7 @@ def syn_br2000():
     start = time.time()
 
     orig_data = f'./testdata/br2000/br2000.csv'
-    path_data = f'./testdata/br2000/MNAR/br2000_missing_0.3.csv'
+    path_data = f'./testdata/br2000/MAR/br2000_missing_0.35.csv'
     path_ic = f'./testdata/br2000/br2000.ic'
 
     # Group bianry attributes as one attribute. return path includes _concat    
@@ -39,7 +39,7 @@ def syn_br2000():
         'microbatch_size': 1,  # micro batch size
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
-        'epsilon': 0.6,
+        'epsilon': 2.6,
         'iterations': 1500,  # =1500 for comparision, =1000 for testing learned weights
         'impute' : True,
         'complete_intermediate' : False,

@@ -17,7 +17,7 @@ def syn_adult():
     start = time.time()
 
     orig_data = f'./testdata/adult/adult.csv'
-    path_data = f'./testdata/adult/MCAR/adult_missing_0.1.csv'
+    path_data = f'./testdata/adult/MAR/adult_missing_0.35.csv'
     path_ic = f'./testdata/adult/adult.ic'
 
     # path_data_preproc = preproc_adult(path_data)
@@ -93,7 +93,7 @@ def syn_adult():
     paras = {
         'reuse_embedding': True,  # set True to reuse the embedding
         'dp': True,  # set True to enable privacy
-        'total_epsilon' : 1,
+        'total_epsilon' : 3,
         'n_row': n_row,  # number of rows in the true dataset
         'n_col': n_col,  # number of columns in the true dataset
         'epsilon1': .1,  #

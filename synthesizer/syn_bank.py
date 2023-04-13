@@ -17,7 +17,7 @@ def syn_bank():
     start = time.time()
 
     orig_data = f'./testdata/bank/bank.csv'
-    path_data = f'./testdata/bank/MNAR/bank_missing_0.3.csv'
+    path_data = f'./testdata/bank/MAR/bank_missing_0.35.csv'
     path_ic = f'./testdata/bank/bank.ic'
 
     path_data_preproc = preproc_bank(path_data)
@@ -103,7 +103,7 @@ def syn_bank():
         'learning_rate': 1e-4,
         'impute' : True,
         'complete_intermediate' : False,
-        'epsilon' : 0.9,
+        'epsilon' : 2.9,
         'iterations': 1600  # =1600 for eps=1
         # 'iterations': 1  # testing
     }
