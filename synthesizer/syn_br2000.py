@@ -40,7 +40,7 @@ def syn_br2000():
         'delta': float(f'1e-{n_len}'),  # depends on data size. Do not change for now
         'learning_rate': 1e-4,
         'epsilon': 2.6,
-        'iterations': 1500,  # =1500 for comparision, =1000 for testing learned weights
+        'iterations': 3000,  # =1500 for comparision, =1000 for testing learned weights
         'impute' : True,
         'complete_intermediate' : False,
     }

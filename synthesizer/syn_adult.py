@@ -105,7 +105,7 @@ def syn_adult():
         'learning_rate': 1e-4,
         'impute' : True,
         'complete_intermediate' : False,
-        'iterations': 1600  # =1600 for eps=1
+        'iterations': 2000  # =1600 for eps=1
         # 'iterations': 1  # testing
     }
 

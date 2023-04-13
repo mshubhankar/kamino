@@ -104,7 +104,7 @@ def syn_bank():
         'impute' : True,
         'complete_intermediate' : False,
         'epsilon' : 2.9,
-        'iterations': 1600  # =1600 for eps=1
+        'iterations': 3200  # =1600 for eps=1
         # 'iterations': 1  # testing
     }
 
